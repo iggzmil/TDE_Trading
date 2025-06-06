@@ -10,10 +10,11 @@
 require_once __DIR__ . '/tde-mail-sender.php';
 require_once __DIR__ . '/session-handler.php';
 
-// Enable error reporting for debugging (comment this out in production)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Disable error display to prevent HTML output interfering with JSON
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
+ini_set('log_errors', 1);
 
 // reCAPTCHA configuration
 define('RECAPTCHA_SECRET_KEY', 'YOUR_SECRET_KEY_HERE'); // Replace with your actual secret key
@@ -309,6 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 // Process POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
     // Check rate limiting
     if (!checkRateLimit()) {
         echo json_encode([
@@ -417,6 +419,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'success' => false,
             'message' => 'We apologize, but there was a problem sending your message. Please try again later or contact us directly at info@tdetrading.com.au',
             'technical_error' => $emailResult['message']
+        ]);
+    }
+    } catch (Exception $e) {
+        // Log the error
+        error_log('Contact form error: ' . $e->getMessage());
+        
+        echo json_encode([
+            'success' => false,
+            'message' => 'We apologise, but there was a technical problem submitting your message. Please try again later or contact us directly.'
         ]);
     }
 } else {

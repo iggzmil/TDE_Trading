@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset reCAPTCHA on error
             grecaptcha.reset();
             console.error('Form submission error:', error);
-            showMessage('We apologize, but there was a technical problem submitting your message. Please try again later or contact us directly.');
+            showMessage('We apologise, but there was a technical problem submitting your message. Please try again later or contact us directly.');
         });
     });
 
