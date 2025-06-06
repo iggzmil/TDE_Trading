@@ -344,22 +344,23 @@ $(document).ready(function() {
                 // Create new response element if none exists
                 responseElement = document.createElement('div');
                 responseElement.className = 'form-response';
-                responseElement.style.marginTop = '10px';
-                responseElement.style.padding = '10px';
-                responseElement.style.borderRadius = '4px';
+                responseElement.id = 'msgSubmit';
                 submitBtn.parentElement.appendChild(responseElement);
             }
             
+            // Clear previous classes and animations
+            responseElement.className = 'form-response error show';
             responseElement.innerHTML = message;
             responseElement.style.display = 'block';
-            responseElement.style.backgroundColor = '#f8d7da';
-            responseElement.style.color = '#721c24';
-            responseElement.style.border = '1px solid #f5c6cb';
             
-            // Hide message after 5 seconds
+            // Hide message after 7 seconds with animation
             setTimeout(function() {
-                responseElement.style.display = 'none';
-            }, 5000);
+                responseElement.className = 'form-response error hide';
+                setTimeout(function() {
+                    responseElement.style.display = 'none';
+                    responseElement.className = 'form-response';
+                }, 300);
+            }, 7000);
         }
 
         // Show form success message
@@ -373,22 +374,23 @@ $(document).ready(function() {
                 // Create new response element if none exists
                 responseElement = document.createElement('div');
                 responseElement.className = 'form-response';
-                responseElement.style.marginTop = '10px';
-                responseElement.style.padding = '10px';
-                responseElement.style.borderRadius = '4px';
+                responseElement.id = 'msgSubmit';
                 submitBtn.parentElement.appendChild(responseElement);
             }
             
+            // Clear previous classes and animations
+            responseElement.className = 'form-response success show';
             responseElement.innerHTML = message;
             responseElement.style.display = 'block';
-            responseElement.style.backgroundColor = '#d4edda';
-            responseElement.style.color = '#155724';
-            responseElement.style.border = '1px solid #c3e6cb';
             
-            // Hide message after 8 seconds
+            // Hide message after 10 seconds with animation
             setTimeout(function() {
-                responseElement.style.display = 'none';
-            }, 8000);
+                responseElement.className = 'form-response success hide';
+                setTimeout(function() {
+                    responseElement.style.display = 'none';
+                    responseElement.className = 'form-response';
+                }, 300);
+            }, 10000);
         }
 
         // Handle form submission response
