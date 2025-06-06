@@ -329,7 +329,7 @@ $(document).ready(function() {
                 btnText.style.display = 'inline';
                 btnLoading.style.display = 'none';
             } else {
-                submitBtn.innerHTML = 'submit message';
+                submitBtn.innerHTML = 'send message';
             }
         }
 

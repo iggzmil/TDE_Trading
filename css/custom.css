@@ -589,6 +589,47 @@ body{
     right: auto;
 }
 
+/* Contact form button loading states */
+.btn-loading {
+    display: none;
+}
+
+/* Contact form layout - button and reCAPTCHA side by side */
+.form-submit-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.submit-btn-wrapper {
+    flex: 0 0 auto;
+}
+
+.recaptcha-wrapper {
+    flex: 0 0 auto;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    .form-submit-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .submit-btn-wrapper {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .recaptcha-wrapper {
+        width: 100%;
+        text-align: center;
+    }
+}
+
 .cb-cursor:before{
 	background:linear-gradient(263deg, var(--accent-color) 0.16%, var(--dark-color) 99.84%);
 }
