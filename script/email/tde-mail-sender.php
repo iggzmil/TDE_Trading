@@ -8,7 +8,7 @@
 // Define constants for email configuration
 define('TDE_SMTP_HOST', 'mail.aaa-city.com');
 define('TDE_SMTP_PORT', 587);
-define('TDE_SMTP_USERNAME', 'smtpmailer@tdetrading.com.au');
+define('TDE_SMTP_USERNAME', 'smtpmailer@aaa-city.com');
 define('TDE_SMTP_PASSWORD', 'Aut0SMTPMa1l3r');
 define('TDE_SMTP_ENCRYPTION', 'tls'); // STARTTLS
 
