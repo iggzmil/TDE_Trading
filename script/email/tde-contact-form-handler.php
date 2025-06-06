@@ -15,6 +15,56 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// reCAPTCHA configuration
+define('RECAPTCHA_SECRET_KEY', 'YOUR_SECRET_KEY_HERE'); // Replace with your actual secret key
+
+// Function to verify reCAPTCHA
+function verifyRecaptcha($recaptchaResponse) {
+    if (empty($recaptchaResponse)) {
+        return false;
+    }
+
+    $secretKey = RECAPTCHA_SECRET_KEY;
+    
+    // If secret key is not configured, skip validation (for development)
+    if ($secretKey === 'YOUR_SECRET_KEY_HERE') {
+        error_log('reCAPTCHA secret key not configured - skipping validation');
+        return true; // Allow form submission in development
+    }
+
+    $verifyURL = 'https://www.google.com/recaptcha/api/siteverify';
+    $postData = http_build_query([
+        'secret' => $secretKey,
+        'response' => $recaptchaResponse,
+        'remoteip' => $_SERVER['REMOTE_ADDR'] ?? ''
+    ]);
+
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-Type: application/x-www-form-urlencoded',
+            'content' => $postData,
+            'timeout' => 10
+        ]
+    ]);
+
+    $response = file_get_contents($verifyURL, false, $context);
+    
+    if ($response === false) {
+        error_log('Failed to verify reCAPTCHA - network error');
+        return false;
+    }
+
+    $responseData = json_decode($response, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log('Failed to parse reCAPTCHA response JSON');
+        return false;
+    }
+
+    return isset($responseData['success']) && $responseData['success'] === true;
+}
+
 // Set content type for responses
 header('Content-Type: application/json');
 
@@ -305,6 +355,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $sanitizedData[$key] = $value;
         }
+    }
+
+    // Validate reCAPTCHA first
+    $recaptchaResponse = $sanitizedData['g-recaptcha-response'] ?? '';
+    if (!verifyRecaptcha($recaptchaResponse)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Please complete the reCAPTCHA verification.',
+            'errors' => ['reCAPTCHA verification failed']
+        ]);
+        exit;
     }
 
     // Validate form data
