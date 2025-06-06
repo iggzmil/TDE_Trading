@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Allow all CSS and JS files for proper rendering
+Allow: /css/
+Allow: /js/
+Allow: /images/
+
+# Disallow admin and private areas
+Disallow: /script/email/
+Disallow: /*.md$
+
+# Sitemap location
+Sitemap: https://www.tdetrading.com.au/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1 

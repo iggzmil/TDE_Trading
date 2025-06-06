@@ -1,0 +1,94 @@
+# TDE Trading Email Scripts Security Configuration
+# This file protects the email script directory and configures PHP settings
+
+# Deny access to sensitive files
+<Files "*.md">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.log">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.txt">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Prevent direct access to configuration files
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Allow only specific PHP files to be executed
+<FilesMatch "\.(php)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# Deny access to everything else
+<FilesMatch "^(?!(tde-contact-form-handler|tde-mail-sender|session-handler)\.php$).*">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'self'"
+</IfModule>
+
+# PHP configuration for better security
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log /tmp/php_errors.log
+    php_value max_execution_time 30
+    php_value max_input_time 30
+    php_value memory_limit 64M
+    php_value post_max_size 2M
+    php_value upload_max_filesize 1M
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log /tmp/php_errors.log
+    php_value max_execution_time 30
+    php_value max_input_time 30
+    php_value memory_limit 64M
+    php_value post_max_size 2M
+    php_value upload_max_filesize 1M
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+</IfModule>
+
+# Rate limiting (if mod_evasive is available)
+<IfModule mod_evasive.c>
+    DOSHashTableSize    2048
+    DOSPageCount        5
+    DOSPageInterval     1
+    DOSSiteCount        50
+    DOSSiteInterval     1
+    DOSBlockingPeriod   300
+</IfModule>
+
+# Disable server signature
+ServerSignature Off
+
+# Prevent access to PHP files via different methods
+<Files "*.php">
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(POST|GET)$
+        RewriteRule .* - [F,L]
+    </IfModule>
+</Files> 

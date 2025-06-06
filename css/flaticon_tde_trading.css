@@ -1,0 +1,194 @@
+/*!
+*    ______ _       _   _
+*    |  ____| |     | | (_)
+*    | |__  | | __ _| |_ _  ___ ___  _ __
+*    |  __| | |/ _` | __| |/ __/ _ \| '_ \
+*    | |    | | (_| | |_| | (_| (_) | | | |
+*    |_|    |_|\__,_|\__|_|\___\___/|_| |_|
+*
+*         https://www.flaticon.com
+*/
+
+@font-face {
+    font-family: "flaticon_tde_trading";
+    src: url("/webfonts/flaticon_tde_trading.woff2?630161088d72ffee2a1570c90308f34d") format("woff2"),
+url("/webfonts/flaticon_tde_trading.woff?630161088d72ffee2a1570c90308f34d") format("woff"),
+url("/webfonts/flaticon_tde_trading.eot?630161088d72ffee2a1570c90308f34d#iefix") format("embedded-opentype"),
+url("/webfonts/flaticon_tde_trading.ttf?630161088d72ffee2a1570c90308f34d") format("truetype"),
+url("/webfonts/flaticon_tde_trading.svg?630161088d72ffee2a1570c90308f34d#flaticon_tde_trading") format("svg")
+}
+
+i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
+    font-family: flaticon_tde_trading !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.flaticon-call:before {
+    content: "\f101";
+}
+.flaticon-check:before {
+    content: "\f102";
+}
+.flaticon-open-book:before {
+    content: "\f103";
+}
+.flaticon-weekly-calendar-outline-event-interface-symbol:before {
+    content: "\f104";
+}
+.flaticon-risk:before {
+    content: "\f105";
+}
+.flaticon-group:before {
+    content: "\f106";
+}
+.flaticon-analytics:before {
+    content: "\f107";
+}
+.flaticon-class:before {
+    content: "\f108";
+}
+.flaticon-target:before {
+    content: "\f109";
+}
+.flaticon-focus:before {
+    content: "\f10a";
+}
+.flaticon-diamond:before {
+    content: "\f10b";
+}
+.flaticon-infographics:before {
+    content: "\f10c";
+}
+.flaticon-infographics-1:before {
+    content: "\f10d";
+}
+.flaticon-infographics-2:before {
+    content: "\f10e";
+}
+.flaticon-steps:before {
+    content: "\f10f";
+}
+.flaticon-right-up:before {
+    content: "\f110";
+}
+.flaticon-calendar-check:before {
+    content: "\f111";
+}
+.flaticon-money:before {
+    content: "\f112";
+}
+.flaticon-clock:before {
+    content: "\f113";
+}
+.flaticon-email:before {
+    content: "\f114";
+}
+.flaticon-mail:before {
+    content: "\f115";
+}
+.flaticon-facebook-logo:before {
+    content: "\f116";
+}
+.flaticon-instagram:before {
+    content: "\f117";
+}
+.flaticon-twitter:before {
+    content: "\f118";
+}
+.flaticon-youtube:before {
+    content: "\f119";
+}
+.flaticon-star:before {
+    content: "\f11a";
+}
+.flaticon-phone-call:before {
+    content: "\f11b";
+}
+.flaticon-plus:before {
+    content: "\f11c";
+}
+.flaticon-quote:before {
+    content: "\f11d";
+}
+.flaticon-verified:before {
+    content: "\f11e";
+}
+.flaticon-padlock:before {
+    content: "\f11f";
+}
+.flaticon-up-arrow:before {
+    content: "\f120";
+}
+.flaticon-up-chevron:before {
+    content: "\f121";
+}
+.flaticon-chatbot:before {
+    content: "\f122";
+}
+.flaticon-messenger:before {
+    content: "\f123";
+}
+.flaticon-three:before {
+    content: "\f124";
+}
+.flaticon-two:before {
+    content: "\f125";
+}
+.flaticon-slash:before {
+    content: "\f126";
+}
+.flaticon-trend:before {
+    content: "\f127";
+}
+.flaticon-upload:before {
+    content: "\f128";
+}
+.flaticon-up-arrow-1:before {
+    content: "\f129";
+}
+.flaticon-up-arrow-2:before {
+    content: "\f12a";
+}
+.flaticon-up-right-arrow:before {
+    content: "\f12b";
+}
+.flaticon-top-right:before {
+    content: "\f12c";
+}
+.flaticon-top-right-1:before {
+    content: "\f12d";
+}
+.flaticon-direction:before {
+    content: "\f12e";
+}
+.flaticon-this-side-up:before {
+    content: "\f12f";
+}
+.flaticon-increase:before {
+    content: "\f130";
+}
+.flaticon-arrow:before {
+    content: "\f131";
+}
+.flaticon-right-up-1:before {
+    content: "\f132";
+}
+.flaticon-business:before {
+    content: "\f133";
+}
+.flaticon-chat:before {
+    content: "\f134";
+}
+.flaticon-text-bubble:before {
+    content: "\f135";
+}
+.flaticon-comment:before {
+    content: "\f136";
+}
+
