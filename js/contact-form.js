@@ -1,456 +1,438 @@
 /**
  * TDE Trading Contact Form Handler
- * Enhanced JavaScript for contact form submission with validation and user feedback
+ * 
+ * Handles form validation and AJAX submission for the contact form
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    const contactForm = document.getElementById('contactForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnLoading = submitBtn.querySelector('.btn-loading');
-    const msgSubmit = document.getElementById('msgSubmit');
+$(document).ready(function() {
     
-    // Initialize button state - show text, hide loading
-    if (btnText && btnLoading) {
-        btnText.style.display = 'inline';
-        btnLoading.style.display = 'none';
-    }
+    // Contact Form Validation and Submission
+    const contactForm = document.getElementById('contactForm');
+    
+    if (contactForm) {
+        // Get form elements
+        const fnameInput = document.getElementById('fname');
+        const lnameInput = document.getElementById('lname');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const messageInput = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        const allInputs = [fnameInput, lnameInput, emailInput, phoneInput, messageInput];
 
-    // Form validation patterns
-    const validationPatterns = {
-        name: /^[A-Za-z\s\-'\\.]+$/u,
-        email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        phone: /^[\+]?[\d\s\-\(\)]+$/
-    };
-
-    // Real-time validation for individual fields
-    function validateField(field) {
-        const value = field.value.trim();
-        const fieldName = field.name;
-        let isValid = true;
-        let errorMessage = '';
-
-        // Clear previous errors
-        clearFieldError(field);
-
-        if (!value && field.required) {
-            errorMessage = `${getFieldLabel(fieldName)} is required`;
-            isValid = false;
-        } else if (value) {
-            switch (fieldName) {
-                case 'fname':
-                case 'lname':
-                    if (value.length < 2) {
-                        errorMessage = `${getFieldLabel(fieldName)} must be at least 2 characters`;
-                        isValid = false;
-                    } else if (value.length > 30) {
-                        errorMessage = `${getFieldLabel(fieldName)} must be no more than 30 characters`;
-                        isValid = false;
-                    } else if (!validationPatterns.name.test(value)) {
-                        errorMessage = `${getFieldLabel(fieldName)} can only contain letters, spaces, hyphens, and apostrophes`;
-                        isValid = false;
-                    }
-                    break;
-
-                case 'email':
-                    if (value.length > 254) {
-                        errorMessage = 'Email address is too long';
-                        isValid = false;
-                    } else if (!validationPatterns.email.test(value)) {
-                        errorMessage = 'Please enter a valid email address';
-                        isValid = false;
-                    } else {
-                        // Check for common typos
-                        const commonTypos = {
-                            'gmial.com': 'gmail.com',
-                            'gmai.com': 'gmail.com',
-                            'yahooo.com': 'yahoo.com',
-                            'hotmial.com': 'hotmail.com'
-                        };
-                        
-                        const domain = value.split('@')[1];
-                        if (domain && commonTypos[domain]) {
-                            showFieldSuggestion(field, `Did you mean ${value.replace(domain, commonTypos[domain])}?`);
-                        }
-                    }
-                    break;
-
-                case 'phone':
-                    const phoneClean = value.replace(/[\s\-\(\)\+]/g, '');
-                    if (phoneClean.length < 8) {
-                        errorMessage = 'Phone number is too short';
-                        isValid = false;
-                    } else if (phoneClean.length > 15) {
-                        errorMessage = 'Phone number is too long';
-                        isValid = false;
-                    } else if (!validationPatterns.phone.test(value)) {
-                        errorMessage = 'Phone number contains invalid characters';
-                        isValid = false;
-                    } else if (!/\d/.test(phoneClean)) {
-                        errorMessage = 'Phone number must contain digits';
-                        isValid = false;
-                    }
-                    break;
-
-                case 'message':
-                    if (value.length < 10) {
-                        errorMessage = 'Message must be at least 10 characters';
-                        isValid = false;
-                    } else if (value.length > 2000) {
-                        errorMessage = 'Message must be no more than 2000 characters';
-                        isValid = false;
-                    }
-                    break;
+        // Show styled validation message
+        function showError(input, message) {
+            const errorBlock = input.parentElement.querySelector('.help-block.with-errors');
+            if (errorBlock) {
+                errorBlock.textContent = message;
+                errorBlock.style.display = 'block';
+                errorBlock.style.color = '#dc3545';
             }
+            input.classList.add('is-invalid');
         }
 
-        if (!isValid) {
-            showFieldError(field, errorMessage);
-        }
-
-        return isValid;
-    }
-
-    // Get user-friendly field labels
-    function getFieldLabel(fieldName) {
-        const labels = {
-            'fname': 'First name',
-            'lname': 'Last name',
-            'email': 'Email address',
-            'phone': 'Phone number',
-            'message': 'Message'
-        };
-        return labels[fieldName] || fieldName;
-    }
-
-    // Show field-specific error
-    function showFieldError(field, message) {
-        const helpBlock = field.parentNode.querySelector('.help-block');
-        if (helpBlock) {
-            helpBlock.innerHTML = `<ul class="list-unstyled"><li>${message}</li></ul>`;
-            helpBlock.style.display = 'block';
-        }
-        field.classList.add('error');
-    }
-
-    // Show field suggestion
-    function showFieldSuggestion(field, message) {
-        const helpBlock = field.parentNode.querySelector('.help-block');
-        if (helpBlock) {
-            helpBlock.innerHTML = `<ul class="list-unstyled suggestion"><li>${message}</li></ul>`;
-            helpBlock.style.display = 'block';
-        }
-    }
-
-    // Clear field error
-    function clearFieldError(field) {
-        const helpBlock = field.parentNode.querySelector('.help-block');
-        if (helpBlock) {
-            helpBlock.innerHTML = '';
-            helpBlock.style.display = 'none';
-        }
-        field.classList.remove('error');
-    }
-
-    // Add real-time validation to form fields
-    ['fname', 'lname', 'email', 'phone', 'message'].forEach(fieldName => {
-        const field = document.getElementById(fieldName);
-        if (field) {
-            // Validate on blur (when user leaves the field)
-            field.addEventListener('blur', function() {
-                validateField(this);
-            });
-
-            // Clear errors on focus
-            field.addEventListener('focus', function() {
-                clearFieldError(this);
-            });
-
-            // For email field, also validate on input for typo suggestions
-            if (fieldName === 'email') {
-                let emailTimeout;
-                field.addEventListener('input', function() {
-                    clearTimeout(emailTimeout);
-                    emailTimeout = setTimeout(() => {
-                        if (this.value.includes('@')) {
-                            validateField(this);
-                        }
-                    }, 500);
-                });
+        // Clear error message
+        function clearError(input) {
+            const errorBlock = input.parentElement.querySelector('.help-block.with-errors');
+            if (errorBlock) {
+                errorBlock.textContent = '';
+                errorBlock.style.display = 'none';
             }
-        }
-    });
-
-    // Show loading state
-    function showLoading() {
-        submitBtn.disabled = true;
-        btnText.style.display = 'none';
-        btnLoading.style.display = 'inline';
-        submitBtn.classList.add('loading');
-    }
-
-    // Hide loading state
-    function hideLoading() {
-        submitBtn.disabled = false;
-        btnText.style.display = 'inline';
-        btnLoading.style.display = 'none';
-        submitBtn.classList.remove('loading');
-    }
-
-    // Show form response message
-    function showMessage(message, isSuccess = false, errors = []) {
-        msgSubmit.innerHTML = '';
-        
-        if (isSuccess) {
-            msgSubmit.innerHTML = `<div class="alert alert-success"><i class="fa fa-check-circle"></i> ${message}</div>`;
-            msgSubmit.className = 'form-response success';
-        } else {
-            let errorHtml = `<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> ${message}`;
-            
-            if (errors && errors.length > 0) {
-                errorHtml += '<ul class="error-list">';
-                errors.forEach(error => {
-                    errorHtml += `<li>${error}</li>`;
-                });
-                errorHtml += '</ul>';
-            }
-            
-            errorHtml += '</div>';
-            msgSubmit.innerHTML = errorHtml;
-            msgSubmit.className = 'form-response error';
+            input.classList.remove('is-invalid');
         }
 
-        // Scroll to message
-        msgSubmit.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        // Auto-hide success messages after 5 seconds
-        if (isSuccess) {
-            setTimeout(() => {
-                msgSubmit.innerHTML = '';
-                msgSubmit.className = 'form-response';
-            }, 5000);
-        }
-    }
-
-    // Handle form submission
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        // Clear previous messages
-        msgSubmit.innerHTML = '';
-
-        // Validate all fields
-        let isFormValid = true;
-        const formData = new FormData(this);
-        
-        // Validate each field
-        ['fname', 'lname', 'email', 'phone', 'message'].forEach(fieldName => {
-            const field = document.getElementById(fieldName);
-            if (field && !validateField(field)) {
-                isFormValid = false;
-            }
-        });
-
-        // Validate reCAPTCHA
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) {
-            showMessage('Please complete the reCAPTCHA verification.');
-            return;
-        }
-
-        // Add reCAPTCHA response to form data
-        formData.append('g-recaptcha-response', recaptchaResponse);
-
-        if (!isFormValid) {
-            showMessage('Please correct the errors above before submitting.');
-            return;
-        }
-
-        // Show loading state
-        showLoading();
-
-        // Submit form via AJAX
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            hideLoading();
-
-            if (data.success) {
-                showMessage(data.message, true);
-                // Reset form on success
-                this.reset();
-                // Reset reCAPTCHA
-                grecaptcha.reset();
-                // Clear any remaining field errors
-                ['fname', 'lname', 'email', 'phone', 'message'].forEach(fieldName => {
-                    const field = document.getElementById(fieldName);
-                    if (field) {
-                        clearFieldError(field);
-                    }
-                });
+        // Validate first name field
+        function validateFirstName(input) {
+            const value = input.value.trim();
+            if (value === '') {
+                showError(input, 'First name is required');
+                return false;
+            } else if (value.length < 2) {
+                showError(input, 'First name must be at least 2 characters');
+                return false;
+            } else if (value.length > 30) {
+                showError(input, 'First name must be no more than 30 characters');
+                return false;
+            } else if (!/^[A-Za-z\s\-\']+$/.test(value)) {
+                showError(input, 'First name can only contain letters, spaces, hyphens, and apostrophes');
+                return false;
             } else {
-                showMessage(data.message, false, data.errors);
-                // Reset reCAPTCHA on error to allow retry
-                grecaptcha.reset();
-                
-                // If rate limited, show retry time
-                if (data.retry_after) {
-                    setTimeout(() => {
-                        msgSubmit.innerHTML = '';
-                        msgSubmit.className = 'form-response';
-                    }, data.retry_after * 1000);
+                clearError(input);
+                return true;
+            }
+        }
+
+        // Validate last name field
+        function validateLastName(input) {
+            const value = input.value.trim();
+            if (value === '') {
+                showError(input, 'Last name is required');
+                return false;
+            } else if (value.length < 2) {
+                showError(input, 'Last name must be at least 2 characters');
+                return false;
+            } else if (value.length > 30) {
+                showError(input, 'Last name must be no more than 30 characters');
+                return false;
+            } else if (!/^[A-Za-z\s\-\']+$/.test(value)) {
+                showError(input, 'Last name can only contain letters, spaces, hyphens, and apostrophes');
+                return false;
+            } else {
+                clearError(input);
+                return true;
+            }
+        }
+
+        // Validate email field
+        function validateEmail(input) {
+            const value = input.value.trim();
+            if (value === '') {
+                showError(input, 'Email is required');
+                return false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                showError(input, 'Please enter a valid email address');
+                return false;
+            } else {
+                clearError(input);
+                return true;
+            }
+        }
+
+        // Validate phone field
+        function validatePhone(input) {
+            const value = input.value.trim();
+            if (value === '') {
+                showError(input, 'Phone number is required');
+                return false;
+            } else {
+                // Remove all non-numeric characters for validation
+                const numericPhone = value.replace(/[^0-9]/g, '');
+                if (numericPhone.length < 8) {
+                    showError(input, 'Phone number must be at least 8 digits');
+                    return false;
+                } else if (numericPhone.length > 15) {
+                    showError(input, 'Phone number must be no more than 15 digits');
+                    return false;
+                } else {
+                    clearError(input);
+                    return true;
                 }
             }
-        })
-        .catch(error => {
-            hideLoading();
-            // Reset reCAPTCHA on error
-            grecaptcha.reset();
-            console.error('Form submission error:', error);
-            showMessage('We apologise, but there was a technical problem submitting your message. Please try again later or contact us directly.');
-        });
-    });
+        }
 
-    // Add character counter for message field
-    const messageField = document.getElementById('message');
-    if (messageField) {
-        const maxLength = parseInt(messageField.getAttribute('maxlength')) || 2000;
-        
-        // Create character counter element
-        const counterElement = document.createElement('div');
-        counterElement.className = 'character-counter';
-        counterElement.style.cssText = 'font-size: 12px; color: #8F8F8F; text-align: right; margin-top: 5px;';
-        messageField.parentNode.appendChild(counterElement);
-
-        // Update character counter
-        function updateCounter() {
-            const currentLength = messageField.value.length;
-            const remaining = maxLength - currentLength;
-            counterElement.textContent = `${currentLength}/${maxLength} characters`;
-            
-            if (remaining < 100) {
-                counterElement.style.color = '#e74c3c';
-            } else if (remaining < 200) {
-                counterElement.style.color = '#f39c12';
+        // Validate message field
+        function validateMessage(input) {
+            const value = input.value.trim();
+            if (value === '') {
+                showError(input, 'Message is required');
+                return false;
+            } else if (value.length < 10) {
+                showError(input, 'Message must be at least 10 characters');
+                return false;
+            } else if (value.length > 2000) {
+                showError(input, 'Message must be no more than 2000 characters');
+                return false;
             } else {
-                counterElement.style.color = '#8F8F8F';
+                clearError(input);
+                return true;
             }
         }
 
-        messageField.addEventListener('input', updateCounter);
-        updateCounter(); // Initial update
+        // Validate reCAPTCHA (if present)
+        function validateReCaptcha() {
+            // Check if reCAPTCHA exists on the page
+            if (typeof grecaptcha !== 'undefined') {
+                const recaptchaResponse = grecaptcha.getResponse();
+                const recaptchaWrapper = document.querySelector('.recaptcha-wrapper');
+                
+                if (!recaptchaResponse) {
+                    // Show error message for reCAPTCHA
+                    let errorMsg = recaptchaWrapper.querySelector('.recaptcha-error');
+                    if (!errorMsg) {
+                        errorMsg = document.createElement('div');
+                        errorMsg.className = 'recaptcha-error';
+                        errorMsg.style.color = '#dc3545';
+                        errorMsg.style.fontSize = '14px';
+                        errorMsg.style.marginTop = '5px';
+                        recaptchaWrapper.appendChild(errorMsg);
+                    }
+                    errorMsg.textContent = 'Please complete the reCAPTCHA verification';
+                    errorMsg.style.display = 'block';
+                    return false;
+                } else {
+                    // Clear error message
+                    const errorMsg = recaptchaWrapper.querySelector('.recaptcha-error');
+                    if (errorMsg) {
+                        errorMsg.style.display = 'none';
+                    }
+                    return true;
+                }
+            }
+            return true; // If no reCAPTCHA, validation passes
+        }
+
+        // Validate all form fields
+        function validateForm() {
+            const isFnameValid = validateFirstName(fnameInput);
+            const isLnameValid = validateLastName(lnameInput);
+            const isEmailValid = validateEmail(emailInput);
+            const isPhoneValid = validatePhone(phoneInput);
+            const isMessageValid = validateMessage(messageInput);
+            const isRecaptchaValid = validateReCaptcha();
+
+            return isFnameValid && isLnameValid && isEmailValid && isPhoneValid && isMessageValid && isRecaptchaValid;
+        }
+
+        // Add input event listeners for real-time validation
+        fnameInput.addEventListener('input', function() {
+            validateFirstName(this);
+        });
+
+        lnameInput.addEventListener('input', function() {
+            validateLastName(this);
+        });
+
+        emailInput.addEventListener('input', function() {
+            validateEmail(this);
+        });
+
+        phoneInput.addEventListener('input', function() {
+            validatePhone(this);
+        });
+
+        messageInput.addEventListener('input', function() {
+            validateMessage(this);
+        });
+
+        // Add blur event listeners for validation when leaving a field
+        allInputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                // Call appropriate validation function based on input ID
+                if (this.id === 'fname') {
+                    validateFirstName(this);
+                } else if (this.id === 'lname') {
+                    validateLastName(this);
+                } else if (this.id === 'email') {
+                    validateEmail(this);
+                } else if (this.id === 'phone') {
+                    validatePhone(this);
+                } else if (this.id === 'message') {
+                    validateMessage(this);
+                }
+            });
+        });
+
+        // Form submission with enhanced validation
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Always prevent default form submission
+
+            // First validate all fields
+            const isValid = validateForm();
+
+            if (!isValid) {
+                // Focus the first input with an error
+                const firstInvalidInput = document.querySelector('.is-invalid');
+                if (firstInvalidInput) {
+                    firstInvalidInput.focus();
+                }
+                return false;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            if (btnText && btnLoading) {
+                btnText.style.display = 'none';
+                btnLoading.style.display = 'inline';
+            } else {
+                submitBtn.innerHTML = 'Sending...';
+            }
+
+            // Create FormData
+            const formData = new FormData(contactForm);
+
+            // Add reCAPTCHA response to form data if it exists
+            if (typeof grecaptcha !== 'undefined') {
+                formData.append('g-recaptcha-response', grecaptcha.getResponse());
+            }
+
+            // Log the form data being sent (for debugging)
+            console.log('Sending form data to:', contactForm.action);
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            // Use AJAX to submit the form
+            fetch(contactForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                    // Don't set Content-Type when using FormData - it will be set automatically with boundary
+                }
+            })
+            .then(response => {
+                console.log('Server response status:', response.status);
+
+                if (!response.ok) {
+                    if (response.status === 405) {
+                        throw new Error('Method Not Allowed (405): The server does not allow POST requests to this endpoint. Please check server configuration.');
+                    }
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+
+                // First try to get response as text
+                return response.text().then(text => {
+                    try {
+                        // Try to parse as JSON
+                        return JSON.parse(text);
+                    } catch (e) {
+                        // If not valid JSON, return the text
+                        console.error('Server returned non-JSON response:', text);
+                        return {
+                            success: false,
+                            message: 'Server returned an invalid response format',
+                            raw: text
+                        };
+                    }
+                });
+            })
+            .then(data => {
+                // Reset button state
+                resetButtonState();
+
+                // Handle the response
+                handleFormSubmissionResponse(data);
+            })
+            .catch(error => {
+                // Reset button state
+                resetButtonState();
+
+                // Show error message
+                showFormError('Error: ' + error.message);
+                console.error('Form submission error:', error);
+            });
+        });
+
+        // Reset button state
+        function resetButtonState() {
+            submitBtn.disabled = false;
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            if (btnText && btnLoading) {
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            } else {
+                submitBtn.innerHTML = 'Submit Message';
+            }
+        }
+
+        // Show form error message
+        function showFormError(message) {
+            // Try to use existing form response element
+            let responseElement = document.getElementById('msgSubmit');
+            if (!responseElement) {
+                responseElement = document.querySelector('.form-response');
+            }
+            if (!responseElement) {
+                // Create new response element if none exists
+                responseElement = document.createElement('div');
+                responseElement.className = 'form-response';
+                responseElement.style.marginTop = '10px';
+                responseElement.style.padding = '10px';
+                responseElement.style.borderRadius = '4px';
+                submitBtn.parentElement.appendChild(responseElement);
+            }
+            
+            responseElement.innerHTML = message;
+            responseElement.style.display = 'block';
+            responseElement.style.backgroundColor = '#f8d7da';
+            responseElement.style.color = '#721c24';
+            responseElement.style.border = '1px solid #f5c6cb';
+            
+            // Hide message after 5 seconds
+            setTimeout(function() {
+                responseElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show form success message
+        function showFormSuccess(message) {
+            // Try to use existing form response element
+            let responseElement = document.getElementById('msgSubmit');
+            if (!responseElement) {
+                responseElement = document.querySelector('.form-response');
+            }
+            if (!responseElement) {
+                // Create new response element if none exists
+                responseElement = document.createElement('div');
+                responseElement.className = 'form-response';
+                responseElement.style.marginTop = '10px';
+                responseElement.style.padding = '10px';
+                responseElement.style.borderRadius = '4px';
+                submitBtn.parentElement.appendChild(responseElement);
+            }
+            
+            responseElement.innerHTML = message;
+            responseElement.style.display = 'block';
+            responseElement.style.backgroundColor = '#d4edda';
+            responseElement.style.color = '#155724';
+            responseElement.style.border = '1px solid #c3e6cb';
+            
+            // Hide message after 8 seconds
+            setTimeout(function() {
+                responseElement.style.display = 'none';
+            }, 8000);
+        }
+
+        // Handle form submission response
+        function handleFormSubmissionResponse(response) {
+            if (response.success) {
+                // Show success message
+                showFormSuccess(response.message);
+
+                // Reset form
+                contactForm.reset();
+                
+                // Reset reCAPTCHA if it exists
+                if (typeof grecaptcha !== 'undefined') {
+                    grecaptcha.reset();
+                }
+
+                // Clear any existing validation errors
+                allInputs.forEach(input => {
+                    clearError(input);
+                });
+
+            } else {
+                // Show error message
+                if (response.errors && Array.isArray(response.errors)) {
+                    // Display field-specific errors
+                    response.errors.forEach(error => {
+                        // Attempt to determine which field the error is for
+                        if (error.toLowerCase().includes('first name')) {
+                            showError(fnameInput, error);
+                        } else if (error.toLowerCase().includes('last name')) {
+                            showError(lnameInput, error);
+                        } else if (error.toLowerCase().includes('email')) {
+                            showError(emailInput, error);
+                        } else if (error.toLowerCase().includes('phone')) {
+                            showError(phoneInput, error);
+                        } else if (error.toLowerCase().includes('message')) {
+                            showError(messageInput, error);
+                        } else {
+                            // Generic error - show in form response
+                            showFormError(error);
+                        }
+                    });
+                } else {
+                    // Display general error message
+                    showFormError(response.message || 'An error occurred. Please try again.');
+                }
+            }
+        }
     }
-});
-
-// Add CSS for form enhancements
-const style = document.createElement('style');
-style.textContent = `
-.form-control.error {
-    border-color: #e74c3c !important;
-    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25) !important;
-}
-
-.help-block ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.help-block li {
-    color: #e74c3c;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.help-block.suggestion li {
-    color: #f39c12;
-    font-style: italic;
-}
-
-.form-response {
-    margin-top: 20px;
-}
-
-.form-response .alert {
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 0;
-}
-
-.alert-success {
-    color: #155724;
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-}
-
-.error-list {
-    margin: 10px 0 0 0;
-    padding-left: 20px;
-}
-
-.error-list li {
-    margin-bottom: 5px;
-}
-
-.btn-default.loading {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.character-counter {
-    transition: color 0.3s ease;
-}
-
-.form-submit-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.submit-btn-wrapper {
-    flex: 1;
-    min-width: 200px;
-}
-
-.recaptcha-wrapper {
-    flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-    .form-submit-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-    
-    .recaptcha-wrapper {
-        align-self: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .recaptcha-wrapper .g-recaptcha {
-        transform: scale(0.85);
-        transform-origin: 0 0;
-    }
-}
-`;
-document.head.appendChild(style); 
+}); 

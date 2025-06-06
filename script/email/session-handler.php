@@ -1,6 +1,6 @@
 <?php
 /**
- * Session Handler for DK Dental Studio
+ * Session Handler for TDE Trading
  * 
  * This script handles session management for CSRF protection
  * and other session-related functionality.
@@ -60,4 +60,4 @@ if (basename($_SERVER['SCRIPT_FILENAME']) == basename(__FILE__)) {
     echo json_encode([
         'csrf_token' => getCsrfToken()
     ]);
-}
+} 
