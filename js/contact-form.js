@@ -285,9 +285,12 @@ $(document).ready(function() {
 
                 // First try to get response as text
                 return response.text().then(text => {
+                    console.log('Server response text:', text);
                     try {
                         // Try to parse as JSON
-                        return JSON.parse(text);
+                        const jsonData = JSON.parse(text);
+                        console.log('Parsed JSON response:', jsonData);
+                        return jsonData;
                     } catch (e) {
                         // If not valid JSON, return the text
                         console.error('Server returned non-JSON response:', text);
@@ -326,7 +329,7 @@ $(document).ready(function() {
                 btnText.style.display = 'inline';
                 btnLoading.style.display = 'none';
             } else {
-                submitBtn.innerHTML = 'Submit Message';
+                submitBtn.innerHTML = 'submit message';
             }
         }
 
@@ -390,6 +393,7 @@ $(document).ready(function() {
 
         // Handle form submission response
         function handleFormSubmissionResponse(response) {
+            console.log('Handling form submission response:', response);
             if (response.success) {
                 // Show success message
                 showFormSuccess(response.message);
