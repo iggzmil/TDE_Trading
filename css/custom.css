@@ -290,10 +290,10 @@ img{
 	/* Mobile button styling to match other mobile buttons */
 	width: 100% !important;
 	text-align: center;
-	padding: 16px 20px !important;
+	padding: 16px 50px 16px 20px !important;
 	font-size: 15px !important;
 	min-height: 50px !important;
-	border-radius: 8px !important;
+	border-radius: 100px !important;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -512,7 +512,7 @@ body{
 	line-height: 1em;
     text-transform: capitalize;
     border: none;
-    padding: 17px 54px 17px 20px;
+    padding: 17px 60px 17px 20px;
     transition: all 0.4s ease-in-out;
 	overflow: hidden;
 	z-index: 0;
@@ -526,21 +526,20 @@ body{
 	content: '\f12b';
 	font-family: 'flaticon_tde_trading';
 	position: absolute;
-	top: -1px;
-	bottom: 0;
-	right: 0;
+	top: 50%;
+	right: 18px;
 	width: 24px;
 	height: 24px;
 	font-size: 18px;
 	color: var(--white-color);
 	text-align: center;
 	line-height: 24px;
-	transform: translate(-20px, 50%);
+	transform: translateY(-50%);
 	transition: all 0.4s ease-in-out;
 }
 
 .btn-default:hover::before{
-	transform: translate(-20px, 50%) rotate(45deg);
+	transform: translateY(-50%) rotate(45deg);
 }
 
 .btn-default.btn-highlighted{
@@ -2033,10 +2032,6 @@ header.main-header .header-sticky.active .container-fluid::before{
 .trading-showcase-content .section-title h3,
 .trading-showcase-content .section-title h1{
 	color: var(--white-color);
-}
-
-.trading-showcase-btn .btn-default.btn-highlighted{
-	margin-left: 40px;
 }
 
 /************************************/
@@ -4508,9 +4503,7 @@ header.main-header .header-sticky.active .container-fluid::before{
 		max-width: 100%;
 	}
 
-	.trading-showcase-btn .btn-default.btn-highlighted{
-		margin-left: 20px;
-	}
+
 
 	.how-we-work{
 		padding: 50px 0;
@@ -5921,26 +5914,30 @@ header.main-header .header-sticky.active .container-fluid::before{
 
 	.hero-btn{
 		display: flex;
-		flex-direction: column;
-		gap: 15px;
+		flex-direction: row;
+		gap: 12px;
 		align-items: center;
+		justify-content: center;
 		width: 100%;
-		max-width: 350px;
-		margin: 0 auto;
+		margin: 60px auto 0;
 	}
 
 	.hero-btn .btn-default{
-		width: 100%;
+		width: auto;
 		text-align: center;
-		padding: 16px 20px;
-		font-size: 15px;
-		min-height: 50px;
-		border-radius: 8px;
+		padding: 13px 45px 13px 18px;
+		font-size: 14px;
+		min-height: 46px;
+		border-radius: 100px;
 		margin-left: 0 !important;
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		white-space: nowrap;
+	}
+
+	.hero-btn .btn-default.btn-highlighted{
+		margin-left: 0 !important;
 	}
 
 	/* Header Mobile Improvements */
@@ -6083,28 +6080,8 @@ header.main-header .header-sticky.active .container-fluid::before{
 	}
 
 	.trading-showcase-btn{
-		display: flex;
-		flex-direction: column;
-		gap: 15px;
 		margin-top: 25px;
-		width: 100%;
-		max-width: 350px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.trading-showcase-btn .btn-default{
-		width: 100%;
 		text-align: center;
-		margin-left: 0 !important;
-		padding: 16px 20px;
-		font-size: 15px;
-		min-height: 50px;
-		border-radius: 8px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		white-space: nowrap;
 	}
 
 	/* How We Work Mobile */
@@ -6449,8 +6426,16 @@ header.main-header .header-sticky.active .container-fluid::before{
 	/* Button Mobile Improvements */
 	.btn-default{
 		font-size: 14px;
-		padding: 15px 20px;
+		padding: 15px 50px 15px 20px;
 		min-height: 48px; /* Touch target size */
+	}
+
+	.btn-default::before{
+		width: 20px;
+		height: 20px;
+		font-size: 16px;
+		right: 15px;
+		line-height: 20px;
 	}
 
 	.btn-phone{
@@ -6685,13 +6670,15 @@ header.main-header .header-sticky.active .container-fluid::before{
 	/* Extra small mobile specific improvements */
 	.btn-default{
 		font-size: 13px;
-		padding: 12px 16px;
+		padding: 12px 48px 12px 16px;
 		min-height: 46px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		text-align: center;
 	}
+
+
 
 	.service-item{
 		padding: 20px 12px;
@@ -6969,8 +6956,16 @@ button:focus,
 	
 	.btn-default {
 		font-size: 13px;
-		padding: 12px 16px;
+		padding: 12px 50px 12px 16px;
 		min-height: 44px;
+	}
+
+	.btn-default::before{
+		width: 18px;
+		height: 18px;
+		font-size: 14px;
+		right: 16px;
+		line-height: 18px;
 	}
 	
 	.hero {
@@ -7447,7 +7442,7 @@ button:focus,
 	text-decoration: none;
 	margin-top: 15px;
 	padding: 10px;
-	border-radius: 5px;
+	border-radius: 50px;
 	border: 1px solid var(--divider-color);
 	transition: all 0.3s ease;
 }
