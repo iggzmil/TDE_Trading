@@ -6,19 +6,62 @@
  * and sends emails using the TDE Trading mail server.
  */
 
+// Load Composer autoloader - PHPMailer and Dotenv are now available
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+// Import PHPMailer classes
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
 // Include the TDE mail sender
 require_once __DIR__ . '/tde-mail-sender.php';
 
-// Enable error reporting for debugging (comment this out in production)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Production-safe error handling
+$isProduction = ($_SERVER['SERVER_NAME'] === 'tdetrading.com.au') || 
+                ($_SERVER['SERVER_NAME'] === 'www.tdetrading.com.au');
+
+if ($isProduction) {
+    // Production: Hide errors from users, log them instead
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', __DIR__ . '/../../logs/php_errors.log');
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+} else {
+    // Development: Show errors for debugging
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+}
 
 // Set content type for responses
 header('Content-Type: application/json');
 
-// Allow CORS - use specific domain in production
-header("Access-Control-Allow-Origin: *");
+// Secure CORS - only allow specific domains
+$allowedOrigins = [
+    'https://tdetrading.com.au',
+    'https://www.tdetrading.com.au'
+];
+
+// Add localhost for development (remove for production)
+if (in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', 'dev.tdetrading.com.au'])) {
+    $allowedOrigins[] = 'http://localhost:3000';
+    $allowedOrigins[] = 'http://localhost:8080';
+    $allowedOrigins[] = 'http://127.0.0.1:3000';
+}
+
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} else {
+    // Log unauthorized attempts for security monitoring
+    if (!empty($origin)) {
+        error_log("SECURITY: Unauthorized CORS request from: $origin");
+    }
+    // Still set a default for same-origin requests
+    header("Access-Control-Allow-Origin: https://tdetrading.com.au");
+}
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, X-Requested-With");
 header("Access-Control-Max-Age: 86400"); // 24 hours
@@ -29,9 +72,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Function to check for spam patterns
+function detectSpam($data) {
+    $spamKeywords = ['viagra', 'casino', 'lottery', 'winner', 'congratulations', 'click here', 'free money', 'make money fast'];
+    $suspiciousPatterns = [
+        '/\b(?:https?:\/\/[^\s]+){3,}/', // Multiple URLs
+        '/\b[A-Z]{10,}/', // Excessive caps
+        '/(.)\1{10,}/', // Repeated characters
+    ];
+    
+    $content = strtolower(implode(' ', array_values($data)));
+    
+    // Check for spam keywords
+    foreach ($spamKeywords as $keyword) {
+        if (strpos($content, $keyword) !== false) {
+            return true;
+        }
+    }
+    
+    // Check for suspicious patterns
+    foreach ($suspiciousPatterns as $pattern) {
+        if (preg_match($pattern, $content)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Function to validate time delay (anti-bot protection)
+function validateTimeDelay($data) {
+    $errors = [];
+    $minimumDelay = 20000; // 20 seconds in milliseconds
+
+    if (!isset($data['form-start-time']) || empty($data['form-start-time'])) {
+        $errors[] = 'Invalid form submission - security check failed';
+        return $errors;
+    }
+
+    $formStartTime = intval($data['form-start-time']);
+    $currentTime = round(microtime(true) * 1000); // Current time in milliseconds
+    $elapsedTime = $currentTime - $formStartTime;
+
+    if ($elapsedTime < $minimumDelay) {
+        $errors[] = 'Form submitted too quickly. Please wait a moment and try again.';
+    }
+
+    // Also check if the form was submitted too long ago (e.g., more than 30 minutes)
+    $maximumDelay = 30 * 60 * 1000; // 30 minutes in milliseconds
+    if ($elapsedTime > $maximumDelay) {
+        $errors[] = 'Form session expired. Please refresh the page and try again.';
+    }
+
+    return $errors;
+}
+
 // Function to validate form data
 function validateContactForm($data) {
     $errors = [];
+    
+    // Check for spam
+    if (detectSpam($data)) {
+        $errors[] = 'Message appears to contain spam content';
+        return $errors;
+    }
 
     // Required fields
     $requiredFields = ['fname', 'lname', 'email', 'phone', 'message'];
@@ -135,6 +239,8 @@ $debugInfo = [
     'has_raw_input' => !empty(file_get_contents('php://input')),
     'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
     'php_version' => PHP_VERSION,
+    'anti_bot_enabled' => true,
+    'current_time_ms' => round(microtime(true) * 1000),
     'server_vars' => [
         'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown',
         'script_name' => $_SERVER['SCRIPT_NAME'] ?? 'unknown',
@@ -201,8 +307,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Validate time delay first (anti-bot protection)
+    $timeDelayErrors = validateTimeDelay($sanitizedData);
+    
     // Validate form data
-    $errors = validateContactForm($sanitizedData);
+    $formErrors = validateContactForm($sanitizedData);
+    
+    // Combine all errors
+    $errors = array_merge($timeDelayErrors, $formErrors);
 
     if (!empty($errors)) {
         // Format the error message to be more user-friendly

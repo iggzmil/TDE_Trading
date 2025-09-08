@@ -17,7 +17,13 @@ $(document).ready(function() {
         const phoneInput = document.getElementById('phone');
         const messageInput = document.getElementById('message');
         const submitBtn = document.getElementById('submitBtn');
+        const formStartTimeInput = document.getElementById('form-start-time');
         const allInputs = [fnameInput, lnameInput, emailInput, phoneInput, messageInput];
+
+        // Initialize form start time for bot delay protection
+        if (formStartTimeInput) {
+            formStartTimeInput.value = Date.now();
+        }
 
         // Show styled validation message
         function showError(input, message) {
@@ -137,38 +143,6 @@ $(document).ready(function() {
             }
         }
 
-        // Validate reCAPTCHA (if present)
-        function validateReCaptcha() {
-            // Check if reCAPTCHA exists on the page
-            if (typeof grecaptcha !== 'undefined') {
-                const recaptchaResponse = grecaptcha.getResponse();
-                const recaptchaWrapper = document.querySelector('.recaptcha-wrapper');
-                
-                if (!recaptchaResponse) {
-                    // Show error message for reCAPTCHA
-                    let errorMsg = recaptchaWrapper.querySelector('.recaptcha-error');
-                    if (!errorMsg) {
-                        errorMsg = document.createElement('div');
-                        errorMsg.className = 'recaptcha-error';
-                        errorMsg.style.color = '#dc3545';
-                        errorMsg.style.fontSize = '14px';
-                        errorMsg.style.marginTop = '5px';
-                        recaptchaWrapper.appendChild(errorMsg);
-                    }
-                    errorMsg.textContent = 'Please complete the reCAPTCHA verification';
-                    errorMsg.style.display = 'block';
-                    return false;
-                } else {
-                    // Clear error message
-                    const errorMsg = recaptchaWrapper.querySelector('.recaptcha-error');
-                    if (errorMsg) {
-                        errorMsg.style.display = 'none';
-                    }
-                    return true;
-                }
-            }
-            return true; // If no reCAPTCHA, validation passes
-        }
 
         // Validate all form fields
         function validateForm() {
@@ -177,9 +151,8 @@ $(document).ready(function() {
             const isEmailValid = validateEmail(emailInput);
             const isPhoneValid = validatePhone(phoneInput);
             const isMessageValid = validateMessage(messageInput);
-            const isRecaptchaValid = validateReCaptcha();
 
-            return isFnameValid && isLnameValid && isEmailValid && isPhoneValid && isMessageValid && isRecaptchaValid;
+            return isFnameValid && isLnameValid && isEmailValid && isPhoneValid && isMessageValid;
         }
 
         // Add input event listeners for real-time validation
@@ -252,10 +225,6 @@ $(document).ready(function() {
             // Create FormData
             const formData = new FormData(contactForm);
 
-            // Add reCAPTCHA response to form data if it exists
-            if (typeof grecaptcha !== 'undefined') {
-                formData.append('g-recaptcha-response', grecaptcha.getResponse());
-            }
 
             // Log the form data being sent (for debugging)
             console.log('Sending form data to:', contactForm.action);
@@ -403,10 +372,6 @@ $(document).ready(function() {
                 // Reset form
                 contactForm.reset();
                 
-                // Reset reCAPTCHA if it exists
-                if (typeof grecaptcha !== 'undefined') {
-                    grecaptcha.reset();
-                }
 
                 // Clear any existing validation errors
                 allInputs.forEach(input => {

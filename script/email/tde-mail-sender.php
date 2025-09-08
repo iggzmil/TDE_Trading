@@ -5,25 +5,69 @@
  * Uses PHPMailer to send emails through the TDE Trading SMTP server
  */
 
-// Define constants for email configuration
-define('TDE_SMTP_HOST', 'mail.aaa-city.com');
-define('TDE_SMTP_PORT', 587);
-define('TDE_SMTP_USERNAME', 'smtpmailer@aaa-city.com');
-define('TDE_SMTP_PASSWORD', 'Aut0SMTPMa1l3r');
-define('TDE_SMTP_ENCRYPTION', 'tls'); // STARTTLS
-
-// Check if PHPMailer is already included
-if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-    // If PHPMailer is not available, include the PHPMailer class via composer autoload
-    // or directly include the PHPMailer files
-    if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
-        require_once __DIR__ . '/../../vendor/autoload.php';
-    } else {
-        // If no composer autoload, include PHPMailer classes directly
+// Check if autoloader was already loaded (it should be by tde-contact-form-handler.php)
+// If not, try to load it (for standalone usage)
+if (!class_exists('Dotenv\Dotenv')) {
+    $autoloaderPaths = [
+        __DIR__ . '/../../vendor/autoload.php',
+        __DIR__ . '/../../../vendor/autoload.php', 
+        __DIR__ . '/../../../../vendor/autoload.php',
+    ];
+    
+    $autoloaderLoaded = false;
+    foreach ($autoloaderPaths as $autoloaderPath) {
+        if (file_exists($autoloaderPath)) {
+            require_once $autoloaderPath;
+            $autoloaderLoaded = true;
+            break;
+        }
+    }
+    
+    // If no Composer autoloader found, load PHPMailer classes directly
+    if (!$autoloaderLoaded) {
         require_once __DIR__ . '/PHPMailer/Exception.php';
         require_once __DIR__ . '/PHPMailer/PHPMailer.php';
         require_once __DIR__ . '/PHPMailer/SMTP.php';
     }
+}
+
+// Load environment variables if Dotenv class is available
+if (class_exists('Dotenv\Dotenv')) {
+    
+    // Try different paths for .env file
+    $envPaths = [
+        __DIR__ . '/../../',        // Standard location (/var/www/TDE-Trading/)
+        __DIR__ . '/../../../',     // Alternative location  
+        __DIR__ . '/../../../../',  // Root level
+    ];
+    
+    foreach ($envPaths as $envPath) {
+        if (file_exists($envPath . '.env')) {
+            try {
+                $dotenv = \Dotenv\Dotenv::createImmutable($envPath);
+                $dotenv->load();
+                $dotenv->required(['SMTP_HOST', 'SMTP_PORT', 'SMTP_USERNAME', 'SMTP_PASSWORD', 'SMTP_ENCRYPTION']);
+                break;
+            } catch (Exception $e) {
+                // Continue to next path if this one fails
+                continue;
+            }
+        }
+    }
+    
+    // Define constants from environment variables
+    define('TDE_SMTP_HOST', $_ENV['SMTP_HOST']);
+    define('TDE_SMTP_PORT', (int)$_ENV['SMTP_PORT']);
+    define('TDE_SMTP_USERNAME', $_ENV['SMTP_USERNAME']);
+    define('TDE_SMTP_PASSWORD', $_ENV['SMTP_PASSWORD']);
+    define('TDE_SMTP_ENCRYPTION', $_ENV['SMTP_ENCRYPTION']);
+} else {
+    // Fallback: Load from server environment variables or use defaults
+    define('TDE_SMTP_HOST', $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'mail.aaa-city.com');
+    define('TDE_SMTP_PORT', (int)($_ENV['SMTP_PORT'] ?? getenv('SMTP_PORT') ?? 587));
+    define('TDE_SMTP_USERNAME', $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'smtpmailer@aaa-city.com');
+    define('TDE_SMTP_PASSWORD', $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? 'Aut0SMTPMa1l3r');
+    define('TDE_SMTP_ENCRYPTION', $_ENV['SMTP_ENCRYPTION'] ?? getenv('SMTP_ENCRYPTION') ?? 'tls');
 }
 
 use PHPMailer\PHPMailer\PHPMailer;

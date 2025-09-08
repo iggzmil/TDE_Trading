@@ -40,7 +40,6 @@
 	<link rel="stylesheet" href="css/magnific-popup.css">
 	<link rel="stylesheet" href="css/mousecursor.css">
 	<link href="css/custom.css" rel="stylesheet" media="screen">
-	<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 	<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
@@ -154,6 +153,7 @@
                             <p class="wow fadeInUp" data-wow-delay="0.2s">Get in touch today and take the first step toward smarter moves and stronger results.</p>
                         </div>
                         <form id="contactForm" action="script/email/tde-contact-form-handler.php" method="POST" class="wow fadeInUp" data-wow-delay="0.4s">
+                            <input type="hidden" id="form-start-time" name="form-start-time" value="">
                             <div class="row">
                                 <div class="form-group col-md-6 mb-4">
                                     <input type="text" name="fname" class="form-control" id="fname" placeholder="First Name" required minlength="2" maxlength="30">
@@ -185,10 +185,7 @@
                                         </button>
                                                 <div id="msgSubmit" class="form-response"></div>
                                             </div>
-                                                                        <div class="recaptcha-wrapper">
-                                <div class="g-recaptcha" data-sitekey="6LfxzFcrAAAAANz4i3Z2EK-BBgFu7cPYq_L6OfKY"></div>
-                            </div>
-                                        </div>
+                                                                        </div>
                                     </div>
                                 </div>
                             </div>
