@@ -23,6 +23,22 @@ $(document).ready(function() {
         // Initialize form start time for bot delay protection
         if (formStartTimeInput) {
             formStartTimeInput.value = Date.now();
+            
+            // Disable submit button for 20 seconds
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Please wait 20 seconds...';
+            
+            let countdown = 20;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    submitBtn.innerHTML = `Please wait ${countdown} seconds...`;
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span class="btn-text">send message</span><span class="btn-loading">sending...</span>';
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
         }
 
         // Show styled validation message
