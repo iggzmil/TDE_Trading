@@ -10,8 +10,9 @@ Allow: /images/
 Disallow: /script/email/
 Disallow: /*.md$
 
-# Sitemap location
+# Sitemap locations
 Sitemap: https://www.tdetrading.com.au/sitemap.xml
+Sitemap: https://www.tdetrading.com.au/sitemap-index.xml
 
 # Crawl-delay for respectful crawling
 Crawl-delay: 1 

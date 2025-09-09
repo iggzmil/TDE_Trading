@@ -4,6 +4,8 @@
  * 
  * This script automatically generates an XML sitemap based on all HTML files
  * in the website directory, with proper priorities and change frequencies.
+ * 
+ * Fixed version: Works without SimpleXML extension
  */
 
 // Configuration
@@ -37,11 +39,20 @@ $defaultChangefreq = 'monthly';
  */
 function getHtmlFiles($dir) {
     $files = [];
-    $iterator = new DirectoryIterator($dir);
     
-    foreach ($iterator as $file) {
-        if ($file->isFile() && $file->getExtension() === 'html') {
-            $files[] = $file->getFilename();
+    // Check if directory exists
+    if (!is_dir($dir)) {
+        echo "Error: Directory not found: $dir\n";
+        return $files;
+    }
+    
+    // Scan directory for HTML files
+    $allFiles = scandir($dir);
+    
+    foreach ($allFiles as $file) {
+        // Check if it's an HTML file
+        if (pathinfo($file, PATHINFO_EXTENSION) === 'html') {
+            $files[] = $file;
         }
     }
     
@@ -66,12 +77,15 @@ function getLastModified($filepath) {
 }
 
 /**
- * Generate the XML sitemap
+ * Generate the XML sitemap using string concatenation (no SimpleXML required)
  */
-function generateSitemap($domain, $rootPath, $pageConfig, $defaultPriority, $defaultChangefreq) {
-    $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
+function generateSitemapString($domain, $rootPath, $pageConfig, $defaultPriority, $defaultChangefreq) {
+    // Start XML document
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     
     $htmlFiles = getHtmlFiles($rootPath);
+    $urlCount = 0;
     
     foreach ($htmlFiles as $file) {
         // Skip certain files that shouldn't be in sitemap
@@ -80,15 +94,11 @@ function generateSitemap($domain, $rootPath, $pageConfig, $defaultPriority, $def
             continue;
         }
         
-        $url = $xml->addChild('url');
-        
         // Build the full URL
         $loc = $domain . '/' . ($file === 'index.html' ? '' : $file);
-        $url->addChild('loc', htmlspecialchars($loc));
         
-        // Add last modified date
+        // Get last modified date
         $lastmod = getLastModified($rootPath . '/' . $file);
-        $url->addChild('lastmod', $lastmod);
         
         // Get priority and changefreq from config or use defaults
         if (isset($pageConfig[$file])) {
@@ -99,17 +109,23 @@ function generateSitemap($domain, $rootPath, $pageConfig, $defaultPriority, $def
             $changefreq = $defaultChangefreq;
         }
         
-        $url->addChild('changefreq', $changefreq);
-        $url->addChild('priority', $priority);
+        // Add URL entry
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>" . htmlspecialchars($loc) . "</loc>\n";
+        $xml .= "    <lastmod>" . $lastmod . "</lastmod>\n";
+        $xml .= "    <changefreq>" . $changefreq . "</changefreq>\n";
+        $xml .= "    <priority>" . number_format($priority, 1) . "</priority>\n";
+        $xml .= "  </url>\n";
+        
+        $urlCount++;
     }
     
-    // Format the XML with proper indentation
-    $dom = new DOMDocument('1.0', 'UTF-8');
-    $dom->preserveWhiteSpace = false;
-    $dom->formatOutput = true;
-    $dom->loadXML($xml->asXML());
+    // Close XML document
+    $xml .= '</urlset>';
     
-    return $dom->saveXML();
+    echo "Generated sitemap with $urlCount URLs\n";
+    
+    return $xml;
 }
 
 /**
@@ -117,57 +133,92 @@ function generateSitemap($domain, $rootPath, $pageConfig, $defaultPriority, $def
  */
 function saveSitemap($content, $filepath) {
     $result = file_put_contents($filepath, $content);
-    return $result !== false;
-}
-
-// Generate and save the sitemap
-try {
-    $sitemapContent = generateSitemap($domain, $rootPath, $pageConfig, $defaultPriority, $defaultChangefreq);
-    $sitemapPath = $rootPath . '/sitemap.xml';
-    
-    if (saveSitemap($sitemapContent, $sitemapPath)) {
-        echo "Sitemap generated successfully at: " . $sitemapPath . "\n";
-        echo "Total URLs included: " . substr_count($sitemapContent, '<url>') . "\n";
-        
-        // Also create a sitemap index for future expansion
-        $indexContent = '<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    <sitemap>
-        <loc>' . $domain . '/sitemap.xml</loc>
-        <lastmod>' . date('Y-m-d') . '</lastmod>
-    </sitemap>
-</sitemapindex>';
-        
-        file_put_contents($rootPath . '/sitemap-index.xml', $indexContent);
-        echo "Sitemap index created at: " . $rootPath . "/sitemap-index.xml\n";
+    if ($result !== false) {
+        echo "Sitemap saved successfully to: $filepath\n";
+        echo "File size: " . number_format(strlen($content)) . " bytes\n";
+        return true;
     } else {
-        echo "Error: Failed to save sitemap\n";
+        echo "Error: Failed to save sitemap to: $filepath\n";
+        return false;
     }
-} catch (Exception $e) {
-    echo "Error generating sitemap: " . $e->getMessage() . "\n";
 }
 
-// Create a robots.txt update suggestion
-$robotsContent = "User-agent: *
-Allow: /
+// Main execution
+echo "TDE Trading Sitemap Generator\n";
+echo "==============================\n\n";
 
-# Allow all CSS and JS files for proper rendering
-Allow: /css/
-Allow: /js/
-Allow: /images/
+try {
+    // Check if we're running from web or CLI
+    $isWeb = (php_sapi_name() !== 'cli');
+    
+    if ($isWeb) {
+        // Set content type for web output
+        header('Content-Type: text/plain; charset=utf-8');
+        echo "Running from web browser...\n\n";
+    }
+    
+    echo "Configuration:\n";
+    echo "- Domain: $domain\n";
+    echo "- Root Path: $rootPath\n";
+    echo "- Script Path: " . __DIR__ . "\n\n";
+    
+    // Generate sitemap
+    echo "Generating sitemap...\n";
+    $sitemapContent = generateSitemapString($domain, $rootPath, $pageConfig, $defaultPriority, $defaultChangefreq);
+    
+    // Save main sitemap
+    $sitemapPath = $rootPath . '/sitemap.xml';
+    if (saveSitemap($sitemapContent, $sitemapPath)) {
+        echo "\n✅ Main sitemap generated successfully!\n";
+        
+        // Create sitemap index
+        $indexContent = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $indexContent .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $indexContent .= '  <sitemap>' . "\n";
+        $indexContent .= '    <loc>' . $domain . '/sitemap.xml</loc>' . "\n";
+        $indexContent .= '    <lastmod>' . date('Y-m-d') . '</lastmod>' . "\n";
+        $indexContent .= '  </sitemap>' . "\n";
+        $indexContent .= '</sitemapindex>';
+        
+        $indexPath = $rootPath . '/sitemap-index.xml';
+        if (saveSitemap($indexContent, $indexPath)) {
+            echo "✅ Sitemap index generated successfully!\n";
+        }
+        
+        // Update robots.txt content suggestion
+        echo "\n" . str_repeat('=', 50) . "\n";
+        echo "ROBOTS.TXT UPDATE SUGGESTION\n";
+        echo str_repeat('=', 50) . "\n";
+        echo "Add these lines to your robots.txt file:\n\n";
+        echo "Sitemap: $domain/sitemap.xml\n";
+        echo "Sitemap: $domain/sitemap-index.xml\n";
+        echo str_repeat('=', 50) . "\n";
+        
+        // Provide submission instructions
+        echo "\nNEXT STEPS:\n";
+        echo str_repeat('-', 30) . "\n";
+        echo "1. ✅ Sitemap has been generated at: /sitemap.xml\n";
+        echo "2. 📤 Submit to Google Search Console:\n";
+        echo "   https://search.google.com/search-console/sitemaps\n";
+        echo "3. 📤 Submit to Bing Webmaster Tools:\n";
+        echo "   https://www.bing.com/webmasters/sitemaps\n";
+        echo "4. ✅ Your robots.txt already includes the sitemap reference\n";
+        echo "\n";
+        
+        if ($isWeb) {
+            echo "\n📁 View your sitemap: $domain/sitemap.xml\n";
+        }
+        
+    } else {
+        echo "\n❌ Error: Failed to save sitemap\n";
+    }
+    
+} catch (Exception $e) {
+    echo "\n❌ Error generating sitemap: " . $e->getMessage() . "\n";
+    if ($isWeb) {
+        http_response_code(500);
+    }
+}
 
-# Disallow admin and private areas
-Disallow: /script/email/
-Disallow: /*.md$
-
-# Sitemap locations
-Sitemap: " . $domain . "/sitemap.xml
-Sitemap: " . $domain . "/sitemap-index.xml
-
-# Crawl-delay for respectful crawling
-Crawl-delay: 1
-";
-
-echo "\n--- Suggested robots.txt content ---\n";
-echo $robotsContent;
-echo "\n--- End of robots.txt suggestion ---\n";
+// Add timestamp
+echo "\nGenerated on: " . date('Y-m-d H:i:s') . "\n";
