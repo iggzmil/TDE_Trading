@@ -110,8 +110,18 @@
 
 	/* Custom Mobile Menu Implementation */
 	$(document).ready(function() {
-		// Initialize custom mobile menu
-		initCustomMobileMenu();
+		// Initialize custom mobile menu with a small delay to ensure DOM is ready
+		setTimeout(function() {
+			initCustomMobileMenu();
+		}, 100);
+	});
+	
+	// Fallback initialization on window load
+	$(window).on('load', function() {
+		// Check if mobile menu was not created
+		if ($('.mobile-menu').length === 0 && $('.navbar-toggle').length > 0) {
+			initCustomMobileMenu();
+		}
 	});
 
 	function initCustomMobileMenu() {
@@ -191,11 +201,16 @@
 		const $navbarToggle = $('.navbar-toggle');
 		const $menu = $('#menu');
 
+		// Check if mobile menu already exists
+		if ($('.mobile-menu').length > 0) {
+			return; // Menu already created, don't duplicate
+		}
+
 		// Clear existing content from navbar-toggle
 		$navbarToggle.empty();
 
 		// Create hamburger button directly in navbar-toggle
-		const $hamburgerBtn = $('<button class="mobile-menu-btn navbar-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"></button>');
+		const $hamburgerBtn = $('<button class="mobile-menu-btn navbar-hamburger" aria-label="Toggle navigation menu" aria-expanded="false" type="button"></button>');
 		$hamburgerBtn.html(`
 			<span class="hamburger-line"></span>
 			<span class="hamburger-line"></span>
@@ -212,18 +227,22 @@
 		const $mobileMenuList = $('<ul class="mobile-menu-list"></ul>');
 
 		// Clone menu items from main menu
-		$menu.find('li').each(function() {
-			const $originalItem = $(this);
-			const $link = $originalItem.find('a').first();
-			const href = $link.attr('href');
-			const text = $link.text().trim();
+		if ($menu.length > 0) {
+			$menu.find('li').each(function() {
+				const $originalItem = $(this);
+				const $link = $originalItem.find('a').first();
+				const href = $link.attr('href') || '#';
+				const text = $link.text().trim();
 
-			const $mobileItem = $('<li class="mobile-menu-item"></li>');
-			const $mobileLink = $(`<a href="${href}" class="mobile-menu-link">${text}</a>`);
-			
-			$mobileItem.append($mobileLink);
-			$mobileMenuList.append($mobileItem);
-		});
+				if (text) { // Only add items with text
+					const $mobileItem = $('<li class="mobile-menu-item"></li>');
+					const $mobileLink = $(`<a href="${href}" class="mobile-menu-link">${text}</a>`);
+					
+					$mobileItem.append($mobileLink);
+					$mobileMenuList.append($mobileItem);
+				}
+			});
+		}
 
 		// Add get in touch button as last menu item
 		const $ctaItem = $('<li class="mobile-menu-item mobile-cta-item"></li>');
@@ -257,9 +276,20 @@
 		const $hamburgerBtn = $('.mobile-menu-btn, .navbar-hamburger');
 		const $mobileMenu = $('.mobile-menu');
 
+		// Store current scroll position
+		const scrollTop = $(window).scrollTop();
+		$body.data('scroll-position', scrollTop);
+
 		$mobileMenu.addClass('menu-open');
 		$hamburgerBtn.addClass('menu-active').attr('aria-expanded', 'true');
 		$body.addClass('mobile-menu-open');
+		
+		// Prevent body scroll
+		$body.css({
+			'position': 'fixed',
+			'top': -scrollTop + 'px',
+			'width': '100%'
+		});
 		
 		// Animate menu items
 		$mobileMenu.find('.mobile-menu-item').each(function(index) {
@@ -270,7 +300,9 @@
 		});
 
 		// Focus management for accessibility
-		$mobileMenu.find('.mobile-menu-close').focus();
+		setTimeout(function() {
+			$mobileMenu.find('.mobile-menu-close').focus();
+		}, 100);
 	}
 
 	function closeMobileMenu() {
@@ -283,6 +315,15 @@
 		$hamburgerBtn.removeClass('menu-active').attr('aria-expanded', 'false');
 		$body.removeClass('mobile-menu-open');
 		$mobileMenuItems.removeClass('animate-in');
+		
+		// Restore body scroll
+		const scrollPosition = $body.data('scroll-position') || 0;
+		$body.css({
+			'position': '',
+			'top': '',
+			'width': ''
+		});
+		$(window).scrollTop(scrollPosition);
 	}
 
 	/* Image Reveal Animation */

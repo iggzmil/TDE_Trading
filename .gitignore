@@ -1,0 +1,159 @@
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.development
+.env.*.local
+
+# Dependencies
+vendor/
+node_modules/
+bower_components/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+*.min.js
+*.min.css
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+error_log
+access_log
+php_errors.log
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.temp/
+.tmp/
+tmp/
+temp/
+
+# PHP specific
+composer.lock
+composer.phar
+phpunit.xml
+.phpunit.result.cache
+.php_cs.cache
+.php-cs-fixer.cache
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+*.lcov
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+
+# Session files
+sessions/
+sess_*
+
+# Upload directories (if they contain user data)
+uploads/
+user_uploads/
+private/
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+
+# Claude/AI assistant files
+.claude/
+*.claude.json
+
+# Security and certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.der
+*.p7b
+*.p12
+*.pfx
+
+# Database files
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Cache directories
+.sass-cache/
+.parcel-cache/
+.webpack/
+
+# Output directories
+public/uploads/
+storage/
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package manager locks (optional - uncomment if you want to exclude)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Miscellaneous
+.grunt
+.npm
+.yarn/
+.pnp.*
+.env.example.local

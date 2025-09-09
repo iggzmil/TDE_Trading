@@ -120,6 +120,8 @@ img{
 	transform: translateY(-50%);
 	z-index: 10001;
 	cursor: pointer;
+	padding: 0;
+	margin: 0;
 }
 
 /* Hamburger Button Styling */
@@ -151,11 +153,17 @@ img{
 	display: block;
 	width: 24px;
 	height: 3px;
-	background-color: #fff;
+	background-color: var(--primary-color);
 	margin: 2px 0;
 	border-radius: 2px;
 	transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	transform-origin: center;
+}
+
+/* White hamburger for dark backgrounds */
+.header-sticky .hamburger-line,
+.dark-header .hamburger-line {
+	background-color: #fff;
 }
 
 /* Hamburger Animation */
@@ -181,11 +189,12 @@ img{
 	height: 100vh;
 	background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 	box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
-	z-index: 10000;
+	z-index: 100000;
 	transition: left 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	padding-top: 20px;
 	padding-bottom: 20px;
 	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .mobile-menu.menu-open {
@@ -209,7 +218,7 @@ img{
 	justify-content: center;
 	border-radius: 50%;
 	transition: all 0.3s ease;
-	z-index: 10001;
+	z-index: 100001;
 	line-height: 1;
 }
 
@@ -310,8 +319,9 @@ img{
 	width: 100%;
 	height: 100%;
 	background: rgba(0, 0, 0, 0.5);
-	z-index: 9999;
+	z-index: 99999;
 	backdrop-filter: blur(2px);
+	-webkit-backdrop-filter: blur(2px);
 	animation: fadeIn 0.3s ease;
 }
 
@@ -322,6 +332,8 @@ img{
 
 .mobile-menu-open {
 	overflow: hidden;
+	position: fixed;
+	width: 100%;
 }
 
 /* Responsive Breakpoints */
@@ -332,6 +344,11 @@ img{
 	
 	.navbar-toggle {
 		display: block;
+	}
+	
+	/* Ensure header get in touch button is hidden on mobile */
+	.header-btn {
+		display: none !important;
 	}
 }
 
@@ -353,6 +370,62 @@ img{
 		height: 44px;
 		font-size: 26px;
 		border-width: 2px;
+	}
+}
+
+/* Additional Mobile Menu Fixes */
+@media screen and (max-width: 991px) {
+	/* Ensure hamburger is visible */
+	.navbar-toggle {
+		min-width: 44px;
+		min-height: 44px;
+	}
+	
+	/* Fix z-index stacking issues */
+	.header-sticky {
+		z-index: 9999 !important;
+	}
+	
+	/* Ensure mobile menu is above everything */
+	.mobile-menu {
+		z-index: 100000 !important;
+	}
+	
+	/* Improve button tap targets on mobile */
+	.mobile-menu-btn,
+	.navbar-hamburger {
+		min-width: 44px;
+		min-height: 44px;
+		-webkit-tap-highlight-color: transparent;
+	}
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+	.mobile-menu {
+		-webkit-transform: translateX(-100%);
+		transform: translateX(-100%);
+		left: 0;
+	}
+	
+	.mobile-menu.menu-open {
+		-webkit-transform: translateX(0);
+		transform: translateX(0);
+	}
+}
+
+/* Ensure proper visibility on different header states */
+.header-sticky.active .navbar-toggle {
+	display: block !important;
+}
+
+@media screen and (min-width: 992px) {
+	.navbar-toggle {
+		display: none !important;
+	}
+	
+	.mobile-menu {
+		display: none !important;
 	}
 }
 
